@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Reproductor HTML para video MP4 publicado en GitHub Pages" />
+  <title>Papiweb · Reproductor MP4</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #05070b;
+      --panel: rgba(12, 16, 24, 0.9);
+      --border: rgba(255,255,255,0.1);
+      --text: #f3f7fb;
+      --muted: #8d96a3;
+      --accent: #00e5c7;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top left, rgba(0,229,199,0.16), transparent 28%),
+                  linear-gradient(135deg, #05070b 0%, #0c1320 100%);
+      display: grid;
+      place-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: min(960px, 100%);
+      padding: clamp(20px, 3vw, 32px);
+      border-radius: 24px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(18px);
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: clamp(1.4rem, 2.2vw, 2rem);
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .subtitle {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .video-shell {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.08);
+      background: #000;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 70vh;
+      background: #000;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 14px;
+      border-radius: 999px;
+      text-decoration: none;
+      color: var(--text);
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.09);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    a:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.12);
+    }
+
+    .accent {
+      background: linear-gradient(90deg, var(--accent), #7cf3ff);
+      color: #031418;
+      border-color: transparent;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1 class="title">Papiweb · Reproducción de video MP4</h1>
+    <p class="subtitle">Esta app está lista para ser publicada en GitHub Pages y reproduce el archivo MP4 directamente desde el repositorio.</p>
+
+    <div class="video-shell">
+      <video controls autoplay muted loop playsinline>
+        <source src="./video-Papiweb.mp4" type="video/mp4" />
+        Tu navegador no soporta la reproducción de video en este formato.
+      </video>
+    </div>
+
+    <div class="actions">
+      <a class="accent" href="./video-Papiweb.mp4" target="_blank" rel="noreferrer">Descargar MP4</a>
+      <a href="./gadget-3d-espera.html">Abrir vista animada</a>
+    </div>
+  </main>
+</body>
+</html>

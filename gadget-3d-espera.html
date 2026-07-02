@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Papiweb — Esperando al operador</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg-void:   #05060a;
+    --accent:    #00e5c7;
+    --accent-2:  #7cf3ff;
+    --text-hi:   #f2f4f6;
+    --text-mid:  #8a929b;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    position:relative;
+    min-height:100dvh;
+    overflow:hidden;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(0,229,199,0.08), transparent 45%),
+      radial-gradient(circle at 80% 80%, rgba(0,229,199,0.06), transparent 40%),
+      var(--bg-void);
+    font-family:'Inter', system-ui, sans-serif;
+    color:var(--text-hi);
+    cursor:default;
+  }
+
+  /* ---- ruido/estrellas sutiles de fondo ---- */
+  .grid-fx{
+    position:absolute; inset:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+    background-size:46px 46px;
+    mask-image:radial-gradient(circle at 50% 50%, rgba(0,0,0,0.9), transparent 75%);
+    pointer-events:none;
+  }
+
+  /* ---- texto de estado ---- */
+  .status{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; flex-direction:column; align-items:center;
+    padding-top:clamp(28px, 6vh, 60px);
+    z-index:5;
+    pointer-events:none;
+  }
+  .status .brand{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:800;
+    font-size:clamp(18px,2.4vw,24px);
+    letter-spacing:0.01em;
+  }
+  .status .brand span{ color:var(--accent); }
+  .status .sub{
+    margin-top:8px;
+    font-size:12px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--text-mid);
+    display:flex; align-items:center; gap:8px;
+  }
+  .status .sub .dot{
+    width:6px; height:6px; border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 10px rgba(0,229,199,0.7);
+    animation:blink 1.4s ease-in-out infinite;
+  }
+  @keyframes blink{ 0%,100%{opacity:1} 50%{opacity:.25} }
+
+  /* =========================================================
+     GADGET 3D — perspectiva de la escena
+     ========================================================= */
+  .scene{
+    position:fixed;
+    top:0; left:0;
+    width:150px; height:150px;
+    perspective:900px;
+    z-index:10;
+    pointer-events:none;
+    will-change:transform;
+    transition:left 2.6s cubic-bezier(.45,0,.15,1), top 2.6s cubic-bezier(.45,0,.15,1);
+  }
+
+  .gadget{
+    position:relative;
+    width:100%; height:100%;
+    transform-style:preserve-3d;
+    animation:breathe 4.6s ease-in-out infinite;
+  }
+
+  @keyframes breathe{
+    0%,100%{ transform: translateZ(0px) scale(0.86); }
+    50%{     transform: translateZ(40px) scale(1.14); }
+  }
+
+  /* aro metálico exterior */
+  .ring{
+    position:absolute; inset:0;
+    border-radius:50%;
+    background:
+      conic-gradient(from 0deg,
+        #cfd6db 0deg, #6b747c 45deg, #eef3f5 90deg, #4b545c 135deg,
+        #cfd6db 180deg, #6b747c 225deg, #eef3f5 270deg, #4b545c 315deg, #cfd6db 360deg);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.15) inset,
+      0 20px 60px -10px rgba(0,0,0,0.7),
+      0 0 40px -6px var(--accent);
+    animation:spin-ring 6s linear infinite;
+  }
+  @keyframes spin-ring{ to{ background-position:200px 0; filter:hue-rotate(2deg); } }
+
+  /* núcleo (cara frontal del disco) */
+  .core{
+    position:absolute; inset:10px;
+    border-radius:50%;
+    background:
+      radial-gradient(circle at 32% 28%, rgba(255,255,255,0.9), rgba(255,255,255,0) 32%),
+      linear-gradient(150deg, #1b2024 0%, #0c0e11 55%, #05070a 100%);
+    box-shadow:
+      0 0 0 1px rgba(255,255,255,0.06) inset,
+      0 2px 10px rgba(0,0,0,0.6) inset;
+    display:flex; align-items:center; justify-content:center;
+    transform:translateZ(6px);
+  }
+
+  .core .mark{
+    width:82%;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:4px;
+    transform:translateZ(4px);
+  }
+  .core .mark svg{ width:20%; height:20%; opacity:0.9; }
+
+  /* ---- wordmark "Papiweb" en metal brillante grabado en el disco ---- */
+  .metal-text{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:800;
+    font-size:15px;
+    letter-spacing:0.01em;
+    line-height:1;
+    white-space:nowrap;
+
+    background:linear-gradient(100deg,
+      #5b636b 0%, #eef3f5 18%, #9aa2a8 32%,
+      #ffffff 46%, #7cf3ff 54%, #ffffff 62%,
+      #9aa2a8 74%, #eef3f5 88%, #5b636b 100%);
+    background-size:280% 100%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+
+    /* relieve grabado: sombra clara arriba, oscura abajo */
+    filter:
+      drop-shadow(0 1px 0 rgba(255,255,255,0.55))
+      drop-shadow(0 -1px 0.5px rgba(0,0,0,0.65))
+      drop-shadow(0 0 6px rgba(0,229,199,0.35));
+
+    animation:metal-shine 2.8s linear infinite;
+  }
+  @keyframes metal-shine{
+    0%{   background-position:180% 0%; }
+    100%{ background-position:-80% 0%; }
+  }
+
+  .metal-underline{
+    width:56%;
+    height:1px;
+    background:linear-gradient(90deg, transparent, var(--accent-2), transparent);
+    opacity:0.8;
+  }
+
+  /* destello metálico que barre el disco */
+  .shine{
+    position:absolute; inset:0;
+    border-radius:50%;
+    background:linear-gradient(115deg,
+      transparent 30%,
+      rgba(255,255,255,0.75) 47%,
+      var(--accent-2) 50%,
+      rgba(255,255,255,0.75) 53%,
+      transparent 70%);
+    background-size:260% 260%;
+    mix-blend-mode:overlay;
+    opacity:0.9;
+    animation:sweep 3.2s linear infinite;
+    pointer-events:none;
+  }
+  @keyframes sweep{
+    0%{ background-position:120% 0%; }
+    100%{ background-position:-40% 100%; }
+  }
+
+  /* halo de profundidad detrás */
+  .halo{
+    position:absolute; inset:-30px;
+    border-radius:50%;
+    background:radial-gradient(circle, rgba(0,229,199,0.35), transparent 70%);
+    transform:translateZ(-30px);
+    filter:blur(4px);
+    animation:halo-pulse 4.6s ease-in-out infinite;
+  }
+  @keyframes halo-pulse{
+    0%,100%{ opacity:0.35; }
+    50%{ opacity:0.75; }
+  }
+
+  /* chispas / partículas metálicas */
+  .spark{
+    position:absolute;
+    width:3px; height:3px;
+    border-radius:50%;
+    background:var(--accent-2);
+    box-shadow:0 0 8px 2px var(--accent-2);
+    opacity:0;
+    animation:spark-fx 2.4s ease-in-out infinite;
+  }
+  .spark:nth-child(1){ top:6%;  left:50%; animation-delay:0s; }
+  .spark:nth-child(2){ top:50%; left:94%; animation-delay:.6s; }
+  .spark:nth-child(3){ top:92%; left:50%; animation-delay:1.2s; }
+  .spark:nth-child(4){ top:50%; left:6%;  animation-delay:1.8s; }
+  @keyframes spark-fx{
+    0%,80%,100%{ opacity:0; transform:scale(0.4); }
+    88%{ opacity:1; transform:scale(1.6); }
+  }
+
+  footer.credit{
+    position:absolute; bottom:18px; left:0; right:0;
+    text-align:center;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    color:var(--text-mid);
+    z-index:5;
+    pointer-events:none;
+  }
+  footer.credit b{ color:var(--text-hi); }
+</style>
+</head>
+<body>
+
+  <div class="grid-fx"></div>
+
+  <div class="status">
+    <div class="brand">Papi<span>web</span> desarrollos informáticos</div>
+    <div class="sub"><span class="dot"></span> Esperando al operador</div>
+  </div>
+
+  <!-- ============ GADGET 3D FLOTANTE ============ -->
+  <div class="scene" id="scene">
+    <div class="gadget" id="gadget">
+      <div class="halo"></div>
+      <div class="ring"></div>
+      <div class="core">
+        <div class="mark">
+          <!-- marca Papiweb minimal -->
+          <svg viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M8 6.5L20 13L8 19.5V6.5Z" fill="#00e5c7"/>
+          </svg>
+          <span class="metal-text">Papiweb</span>
+          <span class="metal-underline"></span>
+        </div>
+      </div>
+      <div class="shine"></div>
+      <span class="spark"></span>
+      <span class="spark"></span>
+      <span class="spark"></span>
+      <span class="spark"></span>
+    </div>
+  </div>
+
+  <footer class="credit"><b>Papiweb</b> desarrollos informáticos — transmisión en preparación</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  const scene  = document.getElementById('scene');
+  const gadget = document.getElementById('gadget');
+  const SIZE = 150;
+
+  // ---------- 1. desplazamiento aleatorio por la pantalla ----------
+  function randomWaypoint(){
+    const margin = 40;
+    const maxX = window.innerWidth  - SIZE - margin;
+    const maxY = window.innerHeight - SIZE - margin - 90; // deja espacio al header/footer
+    const x = margin + Math.random() * Math.max(maxX - margin, 10);
+    const y = 110 + Math.random() * Math.max(maxY - 110, 10);
+    scene.style.left = x + 'px';
+    scene.style.top  = y + 'px';
+  }
+  randomWaypoint();
+  setInterval(randomWaypoint, 3400);
+
+  // ---------- 2. giro aleatorio periódico (impulsos) ----------
+  let jitterX = 0, jitterY = 0, jitterZ = 0;
+  function randomSpinBurst(){
+    jitterX = (Math.random() - 0.5) * 220;
+    jitterY += 180 + Math.random() * 540;   // acumula para permitir vueltas completas
+    jitterZ = (Math.random() - 0.5) * 40;
+    gadget.style.transition = 'transform 1.4s cubic-bezier(.3,1.4,.4,1)';
+  }
+  setInterval(randomSpinBurst, 2600);
+
+  // ---------- 3. inclinación condicionada por el cursor (parallax) ----------
+  let cursorX = window.innerWidth/2, cursorY = window.innerHeight/2;
+  let curTiltX = 0, curTiltY = 0;
+
+  document.addEventListener('pointermove', (e)=>{
+    cursorX = e.clientX;
+    cursorY = e.clientY;
+  }, { passive:true });
+
+  function applyTransform(){
+    const rect = scene.getBoundingClientRect();
+    const cx = rect.left + rect.width/2;
+    const cy = rect.top  + rect.height/2;
+
+    // distancia normalizada del cursor al centro del gadget
+    const dx = (cursorX - cx) / (window.innerWidth/2);
+    const dy = (cursorY - cy) / (window.innerHeight/2);
+
+    const targetTiltY =  dx * 55;   // rotateY según eje horizontal del cursor
+    const targetTiltX = -dy * 45;   // rotateX según eje vertical del cursor
+
+    // suavizado (lerp) para que el giro sea fluido, no brusco
+    curTiltX += (targetTiltX - curTiltX) * 0.045;
+    curTiltY += (targetTiltY - curTiltY) * 0.045;
+
+    // efecto magnético: cuanto más cerca el cursor, más se "acerca" (escala extra)
+    const dist = Math.hypot(cursorX - cx, cursorY - cy);
+    const proximity = Math.max(0, 1 - dist / 260);        // 0..1
+    const magnetScale = 1 + proximity * 0.28;
+    const magnetGlow  = 0.35 + proximity * 0.65;
+
+    gadget.style.transform =
+      'rotateX(' + (curTiltX + jitterX * 0.15) + 'deg) ' +
+      'rotateY(' + (curTiltY + jitterY) + 'deg) ' +
+      'rotateZ(' + jitterZ + 'deg) ' +
+      'scale(' + magnetScale + ')';
+
+    gadget.style.filter = 'drop-shadow(0 0 ' + (14 + proximity*22) + 'px rgba(0,229,199,' + magnetGlow + '))';
+
+    requestAnimationFrame(applyTransform);
+  }
+  requestAnimationFrame(applyTransform);
+
+  // reposiciona límites si cambia el tamaño de ventana
+  window.addEventListener('resize', randomWaypoint);
+
+})();
+</script>
+</body>
+</html>
